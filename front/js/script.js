@@ -30,7 +30,7 @@ function displayItems(items) {
       a.href = href;
       
       a.appendChild(article);
-      document.getElementById("items").appendChild(a);
+      document.getElementById('items').appendChild(a);
     });
   } 
 
