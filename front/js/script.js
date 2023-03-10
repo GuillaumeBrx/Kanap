@@ -32,7 +32,4 @@ function displayItems(items) {
       a.appendChild(article);
       document.getElementById('items').appendChild(a);
     });
-  } 
-
-
-
+  }
