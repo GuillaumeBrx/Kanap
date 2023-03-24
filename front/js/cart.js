@@ -1,5 +1,4 @@
 const cart = []
-let itemPrice, itemImage, itemName
 
 
 function getData() {
@@ -9,6 +8,8 @@ function getData() {
         cart.push(item)
         fetchItemDetails(item)
     }
+
+    displayEmptyCart()
 }
 
 
@@ -39,7 +40,7 @@ function displayItem(item) {
     const imageDiv = document.createElement("div")
     imageDiv.classList.add("cart__item__img")
 
-    const img = document.createElement('img');
+    const img = document.createElement('img')
     img.src = item.image
     img.alt = item.altText
 
@@ -58,8 +59,8 @@ function displayItem(item) {
     const deleteDiv = document.createElement("div")
     deleteDiv.classList.add("cart__item__content__settings__delete")
 
-    const itemName = document.createElement('h2');
-    itemName.textContent = item.name;
+    const itemName = document.createElement('h2')
+    itemName.textContent = item.name
 
     const itemColor = document.createElement('p')
     itemColor.textContent = item.colors
@@ -78,7 +79,7 @@ function displayItem(item) {
     input.max = "100"
     input.value = item.quantity
     input.addEventListener("change", () => {
-        updateInput(item.id, item, input.value)
+        updateItemQuantity(item, input.value)
         updateQuantityDisplay(item, input.value) 
     })
 
@@ -109,12 +110,12 @@ function displayItem(item) {
 
     document.getElementById("cart__items").appendChild(article)
     
-    updateCartPrice(item)
-    updateCartQuantity(item)
+    updateCartPrice()
+    updateCartQuantity()
 }
 
 
-function updateCartPrice(item) {
+function updateCartPrice() {
     let calcPrice = 0
     const totalPrice = document.querySelector("#totalPrice")
 
@@ -127,7 +128,7 @@ function updateCartPrice(item) {
 }
 
 
-function updateCartQuantity(item) {
+function updateCartQuantity() {
     let calcQuantity = 0
     const totalQuantity = document.querySelector("#totalQuantity")
     
@@ -140,55 +141,55 @@ function updateCartQuantity(item) {
 }
 
 
-function updateInput(itemId, item, value) {
-    const itemToUpdate = cart.find((cartItem) => cartItem.id === itemId && cartItem.colors === item.colors);
+function updateItemQuantity(item, value) {
+    const itemToUpdate = cart.find((cartItem) => cartItem.id === item.id && cartItem.colors === item.colors)
     if (itemToUpdate) {
-        itemToUpdate.quantity = Number(value);
-        updateCartPrice();
-        updateCartQuantity();
-        updateQuantityDisplay(itemToUpdate, value);
-        updateStorage(itemToUpdate);
+        itemToUpdate.quantity = Number(value)
+        updateCartPrice()
+        updateCartQuantity()
+        updateQuantityDisplay(itemToUpdate, value)
+        updateStorage(itemToUpdate)
     }
 }
 
 
 function updateQuantityDisplay(item, value) {
-    const quantityDisplay = document.querySelector(`[data-id="${item.id}"][data-color="${item.colors}"] .cart__item__content__settings__quantity p`);
-    quantityDisplay.textContent = `Qté : ${value}`;
+    const quantityDisplay = document.querySelector(`[data-id="${item.id}"][data-color="${item.colors}"] .cart__item__content__settings__quantity p`)
+    quantityDisplay.textContent = `Qté : ${value}`
 }
 
 
 function updateStorage(item) {
-    const data = JSON.stringify(item)
+    const data = {
+        id: item.id,
+        quantity: item.quantity,
+        colors: item.colors
+      }
     const key = `${item.id}:${item.colors}`
-    localStorage.setItem(key, data)
+    localStorage.setItem(key, JSON.stringify(data))
 }
 
 
 function deleteItemFromCart(item) {
-    const itemToDelete = cart.findIndex((product) => product.id === item.id && product.colors === item.colors);
+    const itemToDelete = cart.findIndex((product) => product.id === item.id && product.colors === item.colors)
     cart.splice(itemToDelete, 1)
 
     const key = `${item.id}:${item.colors}`
     localStorage.removeItem(key)
 
-    const article = document.querySelector(`[data-id="${item.id}"][data-color="${item.colors}"]`);
-    article.remove();
+    const article = document.querySelector(`[data-id="${item.id}"][data-color="${item.colors}"]`)
+    article.remove()
 
-    updateCartPrice();
-    updateCartQuantity();
+    updateCartPrice()
+    updateCartQuantity()
+    displayEmptyCart()
 }
 
 
 function submitForm(event) {
     event.preventDefault()
 
-    if (cart.length === 0) {
-        alert("Veuillez ajouter des éléments à votre panier")
-        return
-    }
-
-    if (isFormValid()) return
+    if (!isFormValid()) return
 
     const formData = getFormData()
 
@@ -202,9 +203,7 @@ function submitForm(event) {
     .then(response => response.json())
     .then(data => {
         const orderId = data.orderId
-        window.location.href = "confirmation.html" + "?orderId=" + orderId
-
-        console.log(data)
+        window.location.href = "confirmation.html?orderId=" + orderId
     })
 }
 
@@ -226,8 +225,9 @@ function getFormData() {
 
 
 function isFormValid() {
-    const inputs = document.querySelectorAll("input")
     const firstName = document.querySelector("#firstName").value
+    const lastName = document.querySelector("#lastName").value
+    const email = document.querySelector("#email").value
     
     if (/[1-9]/.test(firstName)) {
         const firstNameError = document.querySelector("#firstNameErrorMsg")
@@ -235,13 +235,34 @@ function isFormValid() {
         return false
     }
 
-    inputs.forEach((input) => {
-        if (input.value === "") {
-            alert("Veuillez remplir tous les champs du formulaire")
-        }
+    if (/[1-9]/.test(lastName)) {
+        const lastNameError = document.querySelector("#lastNameErrorMsg")
+        lastNameError.textContent = "Le nom ne doit pas contenir de chiffre"
         return false
-    })
-    return true
+    }
+
+    if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+        return true
+    } else {
+        const emailError = document.querySelector("#emailErrorMsg")
+        emailError.textContent = "Veuillez rentrer une adresse email valide"
+        return false
+    }
+}
+
+
+function displayEmptyCart() {
+    if (cart.length > 0) return 
+    
+    document.querySelector(".cart").remove()
+
+    const emptyCart = document.createElement('p')
+    emptyCart.textContent = 'Votre panier est vide'
+
+    const cartDiv = document.querySelector("#cartAndFormContainer")
+    cartDiv.appendChild(emptyCart)
+
+    emptyCart.style.textAlign = "center"
 }
 
 
