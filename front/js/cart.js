@@ -1,6 +1,7 @@
+// Créer un array qui contiendra les articles de notre panier
 const cart = []
 
-
+// Récupère les articles depuis le localStorage et les ajouter à notre array
 function getData() {
     for(let i = 0; i < localStorage.length; i++) {
         const object = localStorage.getItem(localStorage.key(i))
@@ -9,10 +10,11 @@ function getData() {
         fetchItemDetails(item)
     }
 
+    // Si le panier est vide
     displayEmptyCart()
 }
 
-
+// Récupère les données de notre article
 function fetchItemDetails(item) {
     const productId = item.id
 
@@ -30,7 +32,7 @@ function fetchItemDetails(item) {
     })  
 } 
 
-
+// Affiche les articles sur la page
 function displayItem(item) {
     const article = document.createElement("article")
     article.classList.add("cart__item")
@@ -114,7 +116,7 @@ function displayItem(item) {
     updateCartQuantity()
 }
 
-
+// Met à jour le prix du panier
 function updateCartPrice() {
     let calcPrice = 0
     const totalPrice = document.querySelector("#totalPrice")
@@ -127,7 +129,7 @@ function updateCartPrice() {
     totalPrice.textContent = calcPrice
 }
 
-
+// Met à jour la quantité du panier
 function updateCartQuantity() {
     let calcQuantity = 0
     const totalQuantity = document.querySelector("#totalQuantity")
@@ -140,7 +142,7 @@ function updateCartQuantity() {
     totalQuantity.textContent = calcQuantity
 }
 
-
+// Modifier la quantité d'un article
 function updateItemQuantity(item, value) {
     const itemToUpdate = cart.find((cartItem) => cartItem.id === item.id && cartItem.colors === item.colors)
     if (itemToUpdate) {
@@ -152,13 +154,13 @@ function updateItemQuantity(item, value) {
     }
 }
 
-
+// Met à jour l'affichage de la quantité d'un article
 function updateQuantityDisplay(item, value) {
     const quantityDisplay = document.querySelector(`[data-id="${item.id}"][data-color="${item.colors}"] .cart__item__content__settings__quantity p`)
     quantityDisplay.textContent = `Qté : ${value}`
 }
 
-
+// Met à jour le localStorage
 function updateStorage(item) {
     const data = {
         id: item.id,
@@ -169,7 +171,7 @@ function updateStorage(item) {
     localStorage.setItem(key, JSON.stringify(data))
 }
 
-
+// Supprime un article du panier
 function deleteItemFromCart(item) {
     const itemToDelete = cart.findIndex((product) => product.id === item.id && product.colors === item.colors)
     cart.splice(itemToDelete, 1)
@@ -185,14 +187,16 @@ function deleteItemFromCart(item) {
     displayEmptyCart()
 }
 
-
+// Envoi le formulaire
 function submitForm(event) {
     event.preventDefault()
 
+    // Si le formulaire n'est pas valide, return
     if (!isFormValid()) return
 
     const formData = getFormData()
 
+    // Envoi le formulaire à l'API
     fetch("http://localhost:3000/api/products/order", {
         method: "POST",
         body: JSON.stringify(formData),
@@ -204,10 +208,12 @@ function submitForm(event) {
     .then(data => {
         const orderId = data.orderId
         window.location.href = "confirmation.html?orderId=" + orderId
+        cart.length = 0
+        localStorage.clear()
     })
 }
 
-
+// Récupère les informations à envoyer à l'API
 function getFormData() {
     const form = document.querySelector(".cart__order__form")
     const formData = {
@@ -223,7 +229,7 @@ function getFormData() {
     return formData
 }
 
-
+// Vérifie si le formulaire est valide
 function isFormValid() {
     const firstName = document.querySelector("#firstName").value
     const lastName = document.querySelector("#lastName").value
@@ -250,7 +256,7 @@ function isFormValid() {
     }
 }
 
-
+// Affiche le panier vide
 function displayEmptyCart() {
     if (cart.length > 0) return 
     
@@ -265,9 +271,8 @@ function displayEmptyCart() {
     emptyCart.style.textAlign = "center"
 }
 
-
+// Envoyer le formulaire en cliquant sur le bouton
 const orderButton = document.querySelector(".cart__order__form")
 orderButton.addEventListener("submit", (event) => submitForm(event))
-
 
 getData()

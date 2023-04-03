@@ -1,8 +1,9 @@
+// Récupère les produits depuis l'API
 fetch("http://localhost:3000/api/products")
 .then(response => response.json())
 .then(items => displayItems(items))
   
-
+// Affiche les produits sur la page
 function displayItems(items) {
     items.forEach(item => {
       
